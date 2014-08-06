@@ -1,0 +1,802 @@
+
+StrobeCode.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000003fc  00000000  00000000  00000094  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000002  00800060  000003fc  00000490  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000008  00800062  00800062  00000492  2**0
+                  ALLOC
+  3 .stab         0000093c  00000000  00000000  00000494  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  4 .stabstr      000001f7  00000000  00000000  00000dd0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .comment      0000002f  00000000  00000000  00000fc7  2**0
+                  CONTENTS, READONLY
+  6 .debug_aranges 000000a0  00000000  00000000  00000ff6  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_info   00000627  00000000  00000000  00001096  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_abbrev 00000170  00000000  00000000  000016bd  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_line   00000334  00000000  00000000  0000182d  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_frame  000001b8  00000000  00000000  00001b64  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_str    000001fc  00000000  00000000  00001d1c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_loc    00000338  00000000  00000000  00001f18  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 13 .debug_ranges 00000090  00000000  00000000  00002250  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	09 c0       	rjmp	.+18     	; 0x14 <__ctors_end>
+   2:	21 c0       	rjmp	.+66     	; 0x46 <__bad_interrupt>
+   4:	20 c0       	rjmp	.+64     	; 0x46 <__bad_interrupt>
+   6:	d2 c0       	rjmp	.+420    	; 0x1ac <__vector_3>
+   8:	1e c0       	rjmp	.+60     	; 0x46 <__bad_interrupt>
+   a:	1d c0       	rjmp	.+58     	; 0x46 <__bad_interrupt>
+   c:	1c c0       	rjmp	.+56     	; 0x46 <__bad_interrupt>
+   e:	1b c0       	rjmp	.+54     	; 0x46 <__bad_interrupt>
+  10:	1a c0       	rjmp	.+52     	; 0x46 <__bad_interrupt>
+  12:	19 c0       	rjmp	.+50     	; 0x46 <__bad_interrupt>
+
+00000014 <__ctors_end>:
+  14:	11 24       	eor	r1, r1
+  16:	1f be       	out	0x3f, r1	; 63
+  18:	cf e9       	ldi	r28, 0x9F	; 159
+  1a:	cd bf       	out	0x3d, r28	; 61
+
+0000001c <__do_copy_data>:
+  1c:	10 e0       	ldi	r17, 0x00	; 0
+  1e:	a0 e6       	ldi	r26, 0x60	; 96
+  20:	b0 e0       	ldi	r27, 0x00	; 0
+  22:	ec ef       	ldi	r30, 0xFC	; 252
+  24:	f3 e0       	ldi	r31, 0x03	; 3
+  26:	02 c0       	rjmp	.+4      	; 0x2c <__do_copy_data+0x10>
+  28:	05 90       	lpm	r0, Z+
+  2a:	0d 92       	st	X+, r0
+  2c:	a2 36       	cpi	r26, 0x62	; 98
+  2e:	b1 07       	cpc	r27, r17
+  30:	d9 f7       	brne	.-10     	; 0x28 <__do_copy_data+0xc>
+
+00000032 <__do_clear_bss>:
+  32:	20 e0       	ldi	r18, 0x00	; 0
+  34:	a2 e6       	ldi	r26, 0x62	; 98
+  36:	b0 e0       	ldi	r27, 0x00	; 0
+  38:	01 c0       	rjmp	.+2      	; 0x3c <.do_clear_bss_start>
+
+0000003a <.do_clear_bss_loop>:
+  3a:	1d 92       	st	X+, r1
+
+0000003c <.do_clear_bss_start>:
+  3c:	aa 36       	cpi	r26, 0x6A	; 106
+  3e:	b2 07       	cpc	r27, r18
+  40:	e1 f7       	brne	.-8      	; 0x3a <.do_clear_bss_loop>
+  42:	9a d1       	rcall	.+820    	; 0x378 <main>
+  44:	d9 c1       	rjmp	.+946    	; 0x3f8 <_exit>
+
+00000046 <__bad_interrupt>:
+  46:	dc cf       	rjmp	.-72     	; 0x0 <__vectors>
+
+00000048 <saveState>:
+}stateSG;
+
+//Save the current state to EEPROM, we use the fact that EEPROM index wraps around
+//to save the data to a different location each time, this prolongs the EEPROM
+//life, probably not needed but you never know. 
+void saveState(void){
+  48:	cf 93       	push	r28
+  4a:	df 93       	push	r29
+	eeprom_write_byte(stateSG.curEELocCP, 0);
+  4c:	c4 e6       	ldi	r28, 0x64	; 100
+  4e:	d0 e0       	ldi	r29, 0x00	; 0
+  50:	60 e0       	ldi	r22, 0x00	; 0
+  52:	88 81       	ld	r24, Y
+  54:	99 81       	ldd	r25, Y+1	; 0x01
+  56:	c2 d1       	rcall	.+900    	; 0x3dc <__eewr_byte_tn13a>
+	eeprom_write_byte(stateSG.curEELocCP + 1, EE_STR_SENT);
+  58:	88 81       	ld	r24, Y
+  5a:	99 81       	ldd	r25, Y+1	; 0x01
+  5c:	6e ee       	ldi	r22, 0xEE	; 238
+  5e:	01 96       	adiw	r24, 0x01	; 1
+  60:	bd d1       	rcall	.+890    	; 0x3dc <__eewr_byte_tn13a>
+	eeprom_update_byte(stateSG.curEELocCP + 2, stateSG.curModeC);
+  62:	88 81       	ld	r24, Y
+  64:	99 81       	ldd	r25, Y+1	; 0x01
+  66:	60 91 62 00 	lds	r22, 0x0062
+  6a:	02 96       	adiw	r24, 0x02	; 2
+  6c:	a5 d1       	rcall	.+842    	; 0x3b8 <__eeupd_byte_tn13a>
+	eeprom_write_byte(stateSG.curEELocCP + 3, stateSG.curSubmC);
+  6e:	88 81       	ld	r24, Y
+  70:	99 81       	ldd	r25, Y+1	; 0x01
+  72:	60 91 63 00 	lds	r22, 0x0063
+  76:	03 96       	adiw	r24, 0x03	; 3
+  78:	b1 d1       	rcall	.+866    	; 0x3dc <__eewr_byte_tn13a>
+	eeprom_write_byte(stateSG.curEELocCP + 4, stateSG.curLvlC);
+  7a:	60 91 66 00 	lds	r22, 0x0066
+  7e:	88 81       	ld	r24, Y
+  80:	99 81       	ldd	r25, Y+1	; 0x01
+  82:	04 96       	adiw	r24, 0x04	; 4
+  84:	ab d1       	rcall	.+854    	; 0x3dc <__eewr_byte_tn13a>
+	stateSG.curEELocCP++;
+  86:	88 81       	ld	r24, Y
+  88:	99 81       	ldd	r25, Y+1	; 0x01
+  8a:	01 96       	adiw	r24, 0x01	; 1
+  8c:	99 83       	std	Y+1, r25	; 0x01
+  8e:	88 83       	st	Y, r24
+}
+  90:	df 91       	pop	r29
+  92:	cf 91       	pop	r28
+  94:	08 95       	ret
+
+00000096 <loadState>:
+
+//Load the state from EEPROM, use the wraparound again
+void loadState(void){
+  96:	cf 93       	push	r28
+  98:	df 93       	push	r29
+	uint8_t *loopVarCP, curByteC;
+	
+	for(loopVarCP = 0; loopVarCP < (uint8_t *) EE_SIZE; loopVarCP++){
+  9a:	c0 e0       	ldi	r28, 0x00	; 0
+  9c:	d0 e0       	ldi	r29, 0x00	; 0
+		curByteC = eeprom_read_byte(loopVarCP);
+  9e:	ce 01       	movw	r24, r28
+  a0:	83 d1       	rcall	.+774    	; 0x3a8 <__eerd_byte_tn13a>
+  a2:	9e 01       	movw	r18, r28
+  a4:	2f 5f       	subi	r18, 0xFF	; 255
+  a6:	3f 4f       	sbci	r19, 0xFF	; 255
+		if(curByteC == EE_STR_SENT){
+  a8:	8e 3e       	cpi	r24, 0xEE	; 238
+  aa:	99 f4       	brne	.+38     	; 0xd2 <__stack+0x33>
+			stateSG.curModeC = eeprom_read_byte(loopVarCP + 1);
+  ac:	c9 01       	movw	r24, r18
+  ae:	7c d1       	rcall	.+760    	; 0x3a8 <__eerd_byte_tn13a>
+  b0:	80 93 62 00 	sts	0x0062, r24
+			stateSG.curSubmC = eeprom_read_byte(loopVarCP + 2);
+  b4:	ce 01       	movw	r24, r28
+  b6:	02 96       	adiw	r24, 0x02	; 2
+  b8:	77 d1       	rcall	.+750    	; 0x3a8 <__eerd_byte_tn13a>
+  ba:	80 93 63 00 	sts	0x0063, r24
+			stateSG.curLvlC = eeprom_read_byte(loopVarCP + 3);
+  be:	ce 01       	movw	r24, r28
+  c0:	03 96       	adiw	r24, 0x03	; 3
+  c2:	72 d1       	rcall	.+740    	; 0x3a8 <__eerd_byte_tn13a>
+  c4:	80 93 66 00 	sts	0x0066, r24
+			stateSG.curEELocCP = loopVarCP;
+  c8:	d0 93 65 00 	sts	0x0065, r29
+  cc:	c0 93 64 00 	sts	0x0064, r28
+			return;
+  d0:	0f c0       	rjmp	.+30     	; 0xf0 <__stack+0x51>
+
+//Load the state from EEPROM, use the wraparound again
+void loadState(void){
+	uint8_t *loopVarCP, curByteC;
+	
+	for(loopVarCP = 0; loopVarCP < (uint8_t *) EE_SIZE; loopVarCP++){
+  d2:	e9 01       	movw	r28, r18
+  d4:	20 34       	cpi	r18, 0x40	; 64
+  d6:	31 05       	cpc	r19, r1
+  d8:	11 f7       	brne	.-60     	; 0x9e <loadState+0x8>
+			stateSG.curLvlC = eeprom_read_byte(loopVarCP + 3);
+			stateSG.curEELocCP = loopVarCP;
+			return;
+		}
+	}
+	stateSG.curModeC = MODE_CONST;
+  da:	10 92 62 00 	sts	0x0062, r1
+	stateSG.curSubmC = 0;
+  de:	10 92 63 00 	sts	0x0063, r1
+	stateSG.curLvlC = PWM_MAX;
+  e2:	86 e9       	ldi	r24, 0x96	; 150
+  e4:	80 93 66 00 	sts	0x0066, r24
+	stateSG.curEELocCP = 0;
+  e8:	10 92 65 00 	sts	0x0065, r1
+  ec:	10 92 64 00 	sts	0x0064, r1
+}
+  f0:	df 91       	pop	r29
+  f2:	cf 91       	pop	r28
+  f4:	08 95       	ret
+
+000000f6 <nextState>:
+
+//Advance state before saving to EEPROM
+void nextState(void){
+	stateSG.curSubmC++;
+  f6:	80 91 63 00 	lds	r24, 0x0063
+  fa:	8f 5f       	subi	r24, 0xFF	; 255
+  fc:	80 93 63 00 	sts	0x0063, r24
+	if(stateSG.curSubmC > 4){
+ 100:	85 30       	cpi	r24, 0x05	; 5
+ 102:	58 f0       	brcs	.+22     	; 0x11a <nextState+0x24>
+		stateSG.curSubmC = 0;
+ 104:	10 92 63 00 	sts	0x0063, r1
+		stateSG.curModeC++;
+ 108:	80 91 62 00 	lds	r24, 0x0062
+ 10c:	8f 5f       	subi	r24, 0xFF	; 255
+ 10e:	80 93 62 00 	sts	0x0062, r24
+		if(stateSG.curModeC > MODE_SETLVL)
+ 112:	85 30       	cpi	r24, 0x05	; 5
+ 114:	10 f0       	brcs	.+4      	; 0x11a <nextState+0x24>
+			stateSG.curModeC = MODE_CONST;
+ 116:	10 92 62 00 	sts	0x0062, r1
+ 11a:	08 95       	ret
+
+0000011c <preState>:
+	}
+}
+
+//Revert state before saving to EEPROM
+void preState(void){
+	if(stateSG.curSubmC)
+ 11c:	80 91 63 00 	lds	r24, 0x0063
+ 120:	88 23       	and	r24, r24
+ 122:	21 f0       	breq	.+8      	; 0x12c <preState+0x10>
+		stateSG.curSubmC--;
+ 124:	81 50       	subi	r24, 0x01	; 1
+ 126:	80 93 63 00 	sts	0x0063, r24
+ 12a:	08 95       	ret
+	else
+		stateSG.curModeC--;
+ 12c:	80 91 62 00 	lds	r24, 0x0062
+ 130:	81 50       	subi	r24, 0x01	; 1
+ 132:	80 93 62 00 	sts	0x0062, r24
+ 136:	08 95       	ret
+
+00000138 <sleep>:
+}
+
+//Turns off ADC and go to sleep
+void sleep(void){
+	ADCSRA &= ~(1 << ADEN);
+ 138:	37 98       	cbi	0x06, 7	; 6
+	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+ 13a:	85 b7       	in	r24, 0x35	; 53
+ 13c:	87 7e       	andi	r24, 0xE7	; 231
+ 13e:	80 61       	ori	r24, 0x10	; 16
+ 140:	85 bf       	out	0x35, r24	; 53
+	sleep_enable();
+ 142:	85 b7       	in	r24, 0x35	; 53
+ 144:	80 62       	ori	r24, 0x20	; 32
+ 146:	85 bf       	out	0x35, r24	; 53
+	sleep_cpu();
+ 148:	88 95       	sleep
+ 14a:	08 95       	ret
+
+0000014c <msDelay>:
+}
+
+//Delays x ms using ISR, just sits in a busy wait
+void msDelay(uint16_t delayValI){
+	stateSG.globalTimerIG = delayValI;
+ 14c:	90 93 68 00 	sts	0x0068, r25
+ 150:	80 93 67 00 	sts	0x0067, r24
+	while(stateSG.globalTimerIG);
+ 154:	80 91 67 00 	lds	r24, 0x0067
+ 158:	90 91 68 00 	lds	r25, 0x0068
+ 15c:	89 2b       	or	r24, r25
+ 15e:	d1 f7       	brne	.-12     	; 0x154 <msDelay+0x8>
+}
+ 160:	08 95       	ret
+
+00000162 <fadeIn>:
+
+//Fade in LED
+void fadeIn(uint8_t fadeToC){
+ 162:	cf 93       	push	r28
+ 164:	c8 2f       	mov	r28, r24
+	while(stateSG.curLvlC != fadeToC){
+ 166:	0b c0       	rjmp	.+22     	; 0x17e <fadeIn+0x1c>
+		OCR0B = stateSG.curLvlC;
+ 168:	80 91 66 00 	lds	r24, 0x0066
+ 16c:	89 bd       	out	0x29, r24	; 41
+		msDelay(10);
+ 16e:	8a e0       	ldi	r24, 0x0A	; 10
+ 170:	90 e0       	ldi	r25, 0x00	; 0
+ 172:	ec df       	rcall	.-40     	; 0x14c <msDelay>
+		stateSG.curLvlC++;
+ 174:	90 91 66 00 	lds	r25, 0x0066
+ 178:	9f 5f       	subi	r25, 0xFF	; 255
+ 17a:	90 93 66 00 	sts	0x0066, r25
+	while(stateSG.globalTimerIG);
+}
+
+//Fade in LED
+void fadeIn(uint8_t fadeToC){
+	while(stateSG.curLvlC != fadeToC){
+ 17e:	80 91 66 00 	lds	r24, 0x0066
+ 182:	8c 13       	cpse	r24, r28
+ 184:	f1 cf       	rjmp	.-30     	; 0x168 <fadeIn+0x6>
+		OCR0B = stateSG.curLvlC;
+		msDelay(10);
+		stateSG.curLvlC++;
+	}
+}
+ 186:	cf 91       	pop	r28
+ 188:	08 95       	ret
+
+0000018a <fadeOut>:
+
+//Fade out LED
+void fadeOut(void){
+	while(stateSG.curLvlC){
+ 18a:	0b c0       	rjmp	.+22     	; 0x1a2 <fadeOut+0x18>
+		OCR0B = stateSG.curLvlC;
+ 18c:	80 91 66 00 	lds	r24, 0x0066
+ 190:	89 bd       	out	0x29, r24	; 41
+		msDelay(10);
+ 192:	8a e0       	ldi	r24, 0x0A	; 10
+ 194:	90 e0       	ldi	r25, 0x00	; 0
+ 196:	da df       	rcall	.-76     	; 0x14c <msDelay>
+		stateSG.curLvlC--;		
+ 198:	80 91 66 00 	lds	r24, 0x0066
+ 19c:	81 50       	subi	r24, 0x01	; 1
+ 19e:	80 93 66 00 	sts	0x0066, r24
+	}
+}
+
+//Fade out LED
+void fadeOut(void){
+	while(stateSG.curLvlC){
+ 1a2:	80 91 66 00 	lds	r24, 0x0066
+ 1a6:	81 11       	cpse	r24, r1
+ 1a8:	f1 cf       	rjmp	.-30     	; 0x18c <fadeOut+0x2>
+		OCR0B = stateSG.curLvlC;
+		msDelay(10);
+		stateSG.curLvlC--;		
+	}
+}
+ 1aa:	08 95       	ret
+
+000001ac <__vector_3>:
+
+//ISR triggers every 1mS, used to read the battery state, disable light on low battery,
+//manage timers for other modes and manage the saving of states when the light
+//has been turned on for certain lengths of time
+ISR(TIM0_OVF_vect){
+ 1ac:	1f 92       	push	r1
+ 1ae:	0f 92       	push	r0
+ 1b0:	0f b6       	in	r0, 0x3f	; 63
+ 1b2:	0f 92       	push	r0
+ 1b4:	11 24       	eor	r1, r1
+ 1b6:	2f 93       	push	r18
+ 1b8:	3f 93       	push	r19
+ 1ba:	4f 93       	push	r20
+ 1bc:	5f 93       	push	r21
+ 1be:	6f 93       	push	r22
+ 1c0:	7f 93       	push	r23
+ 1c2:	8f 93       	push	r24
+ 1c4:	9f 93       	push	r25
+ 1c6:	af 93       	push	r26
+ 1c8:	bf 93       	push	r27
+ 1ca:	ef 93       	push	r30
+ 1cc:	ff 93       	push	r31
+	static uint16_t modeTimeI = 1000;
+	uint8_t curBatValC = ADCH;
+ 1ce:	25 b1       	in	r18, 0x05	; 5
+	
+	if(stateSG.globalTimerIG)
+ 1d0:	80 91 67 00 	lds	r24, 0x0067
+ 1d4:	90 91 68 00 	lds	r25, 0x0068
+ 1d8:	89 2b       	or	r24, r25
+ 1da:	49 f0       	breq	.+18     	; 0x1ee <__vector_3+0x42>
+		stateSG.globalTimerIG--;
+ 1dc:	80 91 67 00 	lds	r24, 0x0067
+ 1e0:	90 91 68 00 	lds	r25, 0x0068
+ 1e4:	01 97       	sbiw	r24, 0x01	; 1
+ 1e6:	90 93 68 00 	sts	0x0068, r25
+ 1ea:	80 93 67 00 	sts	0x0067, r24
+	
+	if(stateSG.timeStateC == STATE_BAT)
+ 1ee:	80 91 69 00 	lds	r24, 0x0069
+ 1f2:	83 30       	cpi	r24, 0x03	; 3
+ 1f4:	71 f1       	breq	.+92     	; 0x252 <__vector_3+0xa6>
+		return;
+		
+	if(curBatValC < BAT_LOW_VAL){
+ 1f6:	22 38       	cpi	r18, 0x82	; 130
+ 1f8:	30 f4       	brcc	.+12     	; 0x206 <__vector_3+0x5a>
+		stateSG.timeStateC = STATE_BAT;
+ 1fa:	83 e0       	ldi	r24, 0x03	; 3
+ 1fc:	80 93 69 00 	sts	0x0069, r24
+		sei();
+ 200:	78 94       	sei
+		fadeOut();
+ 202:	c3 df       	rcall	.-122    	; 0x18a <fadeOut>
+		sleep();
+ 204:	99 df       	rcall	.-206    	; 0x138 <sleep>
+	}
+	
+	if(stateSG.timeStateC != STATE_DONE){
+ 206:	80 91 69 00 	lds	r24, 0x0069
+ 20a:	82 30       	cpi	r24, 0x02	; 2
+ 20c:	11 f1       	breq	.+68     	; 0x252 <__vector_3+0xa6>
+		modeTimeI--;
+ 20e:	80 91 60 00 	lds	r24, 0x0060
+ 212:	90 91 61 00 	lds	r25, 0x0061
+ 216:	01 97       	sbiw	r24, 0x01	; 1
+ 218:	90 93 61 00 	sts	0x0061, r25
+ 21c:	80 93 60 00 	sts	0x0060, r24
+		if(!modeTimeI){
+ 220:	89 2b       	or	r24, r25
+ 222:	b9 f4       	brne	.+46     	; 0x252 <__vector_3+0xa6>
+			if(stateSG.timeStateC == STATE_PRE){
+ 224:	80 91 69 00 	lds	r24, 0x0069
+ 228:	81 11       	cpse	r24, r1
+ 22a:	0a c0       	rjmp	.+20     	; 0x240 <__vector_3+0x94>
+				nextState();
+ 22c:	64 df       	rcall	.-312    	; 0xf6 <nextState>
+				saveState();
+ 22e:	0c df       	rcall	.-488    	; 0x48 <saveState>
+				modeTimeI = 1000;
+ 230:	88 ee       	ldi	r24, 0xE8	; 232
+ 232:	93 e0       	ldi	r25, 0x03	; 3
+ 234:	90 93 61 00 	sts	0x0061, r25
+ 238:	80 93 60 00 	sts	0x0060, r24
+				stateSG.timeStateC = STATE_CHANGE;
+ 23c:	81 e0       	ldi	r24, 0x01	; 1
+ 23e:	07 c0       	rjmp	.+14     	; 0x24e <__vector_3+0xa2>
+			}else if(stateSG.timeStateC == STATE_CHANGE){
+ 240:	80 91 69 00 	lds	r24, 0x0069
+ 244:	81 30       	cpi	r24, 0x01	; 1
+ 246:	29 f4       	brne	.+10     	; 0x252 <__vector_3+0xa6>
+				preState();
+ 248:	69 df       	rcall	.-302    	; 0x11c <preState>
+				saveState();
+ 24a:	fe de       	rcall	.-516    	; 0x48 <saveState>
+				stateSG.timeStateC = STATE_DONE;
+ 24c:	82 e0       	ldi	r24, 0x02	; 2
+ 24e:	80 93 69 00 	sts	0x0069, r24
+			}
+		}
+	}
+}
+ 252:	ff 91       	pop	r31
+ 254:	ef 91       	pop	r30
+ 256:	bf 91       	pop	r27
+ 258:	af 91       	pop	r26
+ 25a:	9f 91       	pop	r25
+ 25c:	8f 91       	pop	r24
+ 25e:	7f 91       	pop	r23
+ 260:	6f 91       	pop	r22
+ 262:	5f 91       	pop	r21
+ 264:	4f 91       	pop	r20
+ 266:	3f 91       	pop	r19
+ 268:	2f 91       	pop	r18
+ 26a:	0f 90       	pop	r0
+ 26c:	0f be       	out	0x3f, r0	; 63
+ 26e:	0f 90       	pop	r0
+ 270:	1f 90       	pop	r1
+ 272:	18 95       	reti
+
+00000274 <setup>:
+
+//Loads the last state and sets up all peripherals
+void setup(void){
+	loadState();
+ 274:	10 df       	rcall	.-480    	; 0x96 <loadState>
+	stateSG.timeStateC = STATE_PRE;
+ 276:	10 92 69 00 	sts	0x0069, r1
+	
+	//Setup Bridge Pins
+	PORTB |= (1 << PB0) | (1 << PB3) | (1 << PB4); //Activate pull-ups for mode pins, not used atm
+ 27a:	88 b3       	in	r24, 0x18	; 24
+ 27c:	89 61       	ori	r24, 0x19	; 25
+ 27e:	88 bb       	out	0x18, r24	; 24
+
+	//Calibrate internal OSC, higher is faster
+	OSCCAL = 0x6D;
+ 280:	8d e6       	ldi	r24, 0x6D	; 109
+ 282:	81 bf       	out	0x31, r24	; 49
+	
+	//Setup Timer/PWM
+	TCCR0A = (1 << COM0B1) | (1 << WGM01) | (1 << WGM00); //Fast PWM, OCR0A as Top, OCR0B sets phase, non inv
+ 284:	83 e2       	ldi	r24, 0x23	; 35
+ 286:	8f bd       	out	0x2f, r24	; 47
+	TCCR0B = (1 << WGM02) | (1 << CS01) | (1 << CS00); //Prescaler set to 64
+ 288:	8b e0       	ldi	r24, 0x0B	; 11
+ 28a:	83 bf       	out	0x33, r24	; 51
+	OCR0A = PWM_MAX; //Gives 1000Hz (1ms) overflow ints for 9.6Mhz clock
+ 28c:	86 e9       	ldi	r24, 0x96	; 150
+ 28e:	86 bf       	out	0x36, r24	; 54
+	TIMSK0 = (1 << TOIE0); //Overflow int enable (TOV0)
+ 290:	82 e0       	ldi	r24, 0x02	; 2
+ 292:	89 bf       	out	0x39, r24	; 57
+	DDRB |= (1 << PB1); //Set PWM pin as output
+ 294:	b9 9a       	sbi	0x17, 1	; 23
+	
+	//Setup ADC
+	ADMUX = (1 << REFS0) | (1 << ADLAR) | (1 << MUX0); //Enable 1V reference, left adjust, set input to PB2
+ 296:	81 e6       	ldi	r24, 0x61	; 97
+ 298:	87 b9       	out	0x07, r24	; 7
+	ADCSRA = (1 << ADEN) | (1 << ADATE) | (1 << ADPS2) | (1 << ADPS1); //Enable ADC, set auto trigger, prescaler to 64
+ 29a:	86 ea       	ldi	r24, 0xA6	; 166
+ 29c:	86 b9       	out	0x06, r24	; 6
+	ADCSRB = (1 << ADTS2); //Set auto trigger on timer overflow
+ 29e:	84 e0       	ldi	r24, 0x04	; 4
+ 2a0:	83 b9       	out	0x03, r24	; 3
+	DIDR0 = (1 << ADC1D); //Digital input disable on PB2
+ 2a2:	84 bb       	out	0x14, r24	; 20
+	
+	sei();
+ 2a4:	78 94       	sei
+ 2a6:	08 95       	ret
+
+000002a8 <strobeGen>:
+}
+
+void strobeGen(uint16_t highTimeC, uint16_t lowTimeC, uint8_t repCountC){
+ 2a8:	cf 92       	push	r12
+ 2aa:	df 92       	push	r13
+ 2ac:	ff 92       	push	r15
+ 2ae:	0f 93       	push	r16
+ 2b0:	1f 93       	push	r17
+ 2b2:	cf 93       	push	r28
+ 2b4:	df 93       	push	r29
+ 2b6:	1f 92       	push	r1
+ 2b8:	cd b7       	in	r28, 0x3d	; 61
+ 2ba:	dd 27       	eor	r29, r29
+ 2bc:	8c 01       	movw	r16, r24
+ 2be:	6b 01       	movw	r12, r22
+	uint8_t loopVarC;
+	
+	for(loopVarC = 0; loopVarC < repCountC; loopVarC++){
+ 2c0:	f1 2c       	mov	r15, r1
+ 2c2:	0b c0       	rjmp	.+22     	; 0x2da <strobeGen+0x32>
+		OCR0B = stateSG.curLvlC;
+ 2c4:	80 91 66 00 	lds	r24, 0x0066
+ 2c8:	89 bd       	out	0x29, r24	; 41
+		msDelay(highTimeC);
+ 2ca:	c8 01       	movw	r24, r16
+ 2cc:	49 83       	std	Y+1, r20	; 0x01
+ 2ce:	3e df       	rcall	.-388    	; 0x14c <msDelay>
+		OCR0B = 0;
+ 2d0:	19 bc       	out	0x29, r1	; 41
+		msDelay(lowTimeC);
+ 2d2:	c6 01       	movw	r24, r12
+ 2d4:	3b df       	rcall	.-394    	; 0x14c <msDelay>
+}
+
+void strobeGen(uint16_t highTimeC, uint16_t lowTimeC, uint8_t repCountC){
+	uint8_t loopVarC;
+	
+	for(loopVarC = 0; loopVarC < repCountC; loopVarC++){
+ 2d6:	f3 94       	inc	r15
+ 2d8:	49 81       	ldd	r20, Y+1	; 0x01
+ 2da:	f4 12       	cpse	r15, r20
+ 2dc:	f3 cf       	rjmp	.-26     	; 0x2c4 <strobeGen+0x1c>
+		OCR0B = stateSG.curLvlC;
+		msDelay(highTimeC);
+		OCR0B = 0;
+		msDelay(lowTimeC);
+	}
+}
+ 2de:	0f 90       	pop	r0
+ 2e0:	df 91       	pop	r29
+ 2e2:	cf 91       	pop	r28
+ 2e4:	1f 91       	pop	r17
+ 2e6:	0f 91       	pop	r16
+ 2e8:	ff 90       	pop	r15
+ 2ea:	df 90       	pop	r13
+ 2ec:	cf 90       	pop	r12
+ 2ee:	08 95       	ret
+
+000002f0 <modeConst>:
+
+void modeConst(void){
+	OCR0B = stateSG.curLvlC;
+ 2f0:	80 91 66 00 	lds	r24, 0x0066
+ 2f4:	89 bd       	out	0x29, r24	; 41
+ 2f6:	ff cf       	rjmp	.-2      	; 0x2f6 <modeConst+0x6>
+
+000002f8 <modeStrobe>:
+	while(1);
+}
+
+void modeStrobe(void){
+	while(1)
+		strobeGen(100, 100, 255);
+ 2f8:	4f ef       	ldi	r20, 0xFF	; 255
+ 2fa:	64 e6       	ldi	r22, 0x64	; 100
+ 2fc:	70 e0       	ldi	r23, 0x00	; 0
+ 2fe:	84 e6       	ldi	r24, 0x64	; 100
+ 300:	90 e0       	ldi	r25, 0x00	; 0
+ 302:	d2 df       	rcall	.-92     	; 0x2a8 <strobeGen>
+ 304:	f9 cf       	rjmp	.-14     	; 0x2f8 <modeStrobe>
+
+00000306 <modeSOS>:
+}
+
+void modeSOS(void){
+	while(1){
+		strobeGen(200, 200, 3);
+ 306:	43 e0       	ldi	r20, 0x03	; 3
+ 308:	68 ec       	ldi	r22, 0xC8	; 200
+ 30a:	70 e0       	ldi	r23, 0x00	; 0
+ 30c:	88 ec       	ldi	r24, 0xC8	; 200
+ 30e:	90 e0       	ldi	r25, 0x00	; 0
+ 310:	cb df       	rcall	.-106    	; 0x2a8 <strobeGen>
+		strobeGen(600, 600, 3);
+ 312:	43 e0       	ldi	r20, 0x03	; 3
+ 314:	68 e5       	ldi	r22, 0x58	; 88
+ 316:	72 e0       	ldi	r23, 0x02	; 2
+ 318:	88 e5       	ldi	r24, 0x58	; 88
+ 31a:	92 e0       	ldi	r25, 0x02	; 2
+ 31c:	c5 df       	rcall	.-118    	; 0x2a8 <strobeGen>
+		strobeGen(200, 200, 3);
+ 31e:	43 e0       	ldi	r20, 0x03	; 3
+ 320:	68 ec       	ldi	r22, 0xC8	; 200
+ 322:	70 e0       	ldi	r23, 0x00	; 0
+ 324:	88 ec       	ldi	r24, 0xC8	; 200
+ 326:	90 e0       	ldi	r25, 0x00	; 0
+ 328:	bf df       	rcall	.-130    	; 0x2a8 <strobeGen>
+		msDelay(1000);
+ 32a:	88 ee       	ldi	r24, 0xE8	; 232
+ 32c:	93 e0       	ldi	r25, 0x03	; 3
+ 32e:	0e df       	rcall	.-484    	; 0x14c <msDelay>
+ 330:	ea cf       	rjmp	.-44     	; 0x306 <modeSOS>
+
+00000332 <modeFade>:
+	}
+}
+
+void modeFade(void){
+	uint8_t origLvlC = stateSG.curLvlC;
+ 332:	c0 91 66 00 	lds	r28, 0x0066
+	
+	while(1){
+		fadeOut();
+ 336:	29 df       	rcall	.-430    	; 0x18a <fadeOut>
+		fadeIn(origLvlC);
+ 338:	8c 2f       	mov	r24, r28
+ 33a:	13 df       	rcall	.-474    	; 0x162 <fadeIn>
+ 33c:	fc cf       	rjmp	.-8      	; 0x336 <modeFade+0x4>
+
+0000033e <modeSetLvl>:
+	}
+}
+
+//Todo: this could clash with low bat fade out and ISR due to curLvlC and timeStateC
+void modeSetLvl(void){
+	stateSG.timeStateC = STATE_DONE;
+ 33e:	82 e0       	ldi	r24, 0x02	; 2
+ 340:	80 93 69 00 	sts	0x0069, r24
+	stateSG.curModeC = MODE_CONST;
+ 344:	10 92 62 00 	sts	0x0062, r1
+	
+	msDelay(1000);
+ 348:	88 ee       	ldi	r24, 0xE8	; 232
+ 34a:	93 e0       	ldi	r25, 0x03	; 3
+ 34c:	ff de       	rcall	.-514    	; 0x14c <msDelay>
+	
+	while(1){
+		for(stateSG.curLvlC = PWM_MAX; stateSG.curLvlC; stateSG.curLvlC -= PWM_STEP){
+ 34e:	c6 e9       	ldi	r28, 0x96	; 150
+ 350:	c0 93 66 00 	sts	0x0066, r28
+ 354:	0c c0       	rjmp	.+24     	; 0x36e <modeSetLvl+0x30>
+			saveState();
+ 356:	78 de       	rcall	.-784    	; 0x48 <saveState>
+			OCR0B = stateSG.curLvlC;
+ 358:	80 91 66 00 	lds	r24, 0x0066
+ 35c:	89 bd       	out	0x29, r24	; 41
+			msDelay(1000);
+ 35e:	88 ee       	ldi	r24, 0xE8	; 232
+ 360:	93 e0       	ldi	r25, 0x03	; 3
+ 362:	f4 de       	rcall	.-536    	; 0x14c <msDelay>
+	stateSG.curModeC = MODE_CONST;
+	
+	msDelay(1000);
+	
+	while(1){
+		for(stateSG.curLvlC = PWM_MAX; stateSG.curLvlC; stateSG.curLvlC -= PWM_STEP){
+ 364:	80 91 66 00 	lds	r24, 0x0066
+ 368:	8f 50       	subi	r24, 0x0F	; 15
+ 36a:	80 93 66 00 	sts	0x0066, r24
+ 36e:	80 91 66 00 	lds	r24, 0x0066
+ 372:	81 11       	cpse	r24, r1
+ 374:	f0 cf       	rjmp	.-32     	; 0x356 <modeSetLvl+0x18>
+ 376:	ec cf       	rjmp	.-40     	; 0x350 <modeSetLvl+0x12>
+
+00000378 <main>:
+		}
+	}
+}
+
+int main(void){
+	setup();
+ 378:	7d df       	rcall	.-262    	; 0x274 <setup>
+	
+	switch(stateSG.curModeC){
+ 37a:	80 91 62 00 	lds	r24, 0x0062
+ 37e:	82 30       	cpi	r24, 0x02	; 2
+ 380:	69 f0       	breq	.+26     	; 0x39c <main+0x24>
+ 382:	28 f4       	brcc	.+10     	; 0x38e <main+0x16>
+ 384:	88 23       	and	r24, r24
+ 386:	41 f0       	breq	.+16     	; 0x398 <main+0x20>
+ 388:	81 30       	cpi	r24, 0x01	; 1
+ 38a:	59 f4       	brne	.+22     	; 0x3a2 <main+0x2a>
+ 38c:	06 c0       	rjmp	.+12     	; 0x39a <main+0x22>
+ 38e:	83 30       	cpi	r24, 0x03	; 3
+ 390:	31 f0       	breq	.+12     	; 0x39e <main+0x26>
+ 392:	84 30       	cpi	r24, 0x04	; 4
+ 394:	31 f4       	brne	.+12     	; 0x3a2 <main+0x2a>
+ 396:	04 c0       	rjmp	.+8      	; 0x3a0 <main+0x28>
+		case(MODE_CONST): modeConst();
+ 398:	ab df       	rcall	.-170    	; 0x2f0 <modeConst>
+		case(MODE_STROBE): modeStrobe();
+ 39a:	ae df       	rcall	.-164    	; 0x2f8 <modeStrobe>
+		case(MODE_SOS): modeSOS();
+ 39c:	b4 df       	rcall	.-152    	; 0x306 <modeSOS>
+		case(MODE_FADE): modeFade();
+ 39e:	c9 df       	rcall	.-110    	; 0x332 <modeFade>
+		case(MODE_SETLVL): modeSetLvl();
+ 3a0:	ce df       	rcall	.-100    	; 0x33e <modeSetLvl>
+	}
+	
+	return 0;
+}
+ 3a2:	80 e0       	ldi	r24, 0x00	; 0
+ 3a4:	90 e0       	ldi	r25, 0x00	; 0
+ 3a6:	08 95       	ret
+
+000003a8 <__eerd_byte_tn13a>:
+ 3a8:	e1 99       	sbic	0x1c, 1	; 28
+ 3aa:	fe cf       	rjmp	.-4      	; 0x3a8 <__eerd_byte_tn13a>
+ 3ac:	1f ba       	out	0x1f, r1	; 31
+ 3ae:	8e bb       	out	0x1e, r24	; 30
+ 3b0:	e0 9a       	sbi	0x1c, 0	; 28
+ 3b2:	99 27       	eor	r25, r25
+ 3b4:	8d b3       	in	r24, 0x1d	; 29
+ 3b6:	08 95       	ret
+
+000003b8 <__eeupd_byte_tn13a>:
+ 3b8:	26 2f       	mov	r18, r22
+
+000003ba <__eeupd_r18_tn13a>:
+ 3ba:	e1 99       	sbic	0x1c, 1	; 28
+ 3bc:	fe cf       	rjmp	.-4      	; 0x3ba <__eeupd_r18_tn13a>
+ 3be:	1f ba       	out	0x1f, r1	; 31
+ 3c0:	8e bb       	out	0x1e, r24	; 30
+ 3c2:	e0 9a       	sbi	0x1c, 0	; 28
+ 3c4:	81 50       	subi	r24, 0x01	; 1
+ 3c6:	0d b2       	in	r0, 0x1d	; 29
+ 3c8:	02 16       	cp	r0, r18
+ 3ca:	39 f0       	breq	.+14     	; 0x3da <__eeupd_r18_tn13a+0x20>
+ 3cc:	1c ba       	out	0x1c, r1	; 28
+ 3ce:	2d bb       	out	0x1d, r18	; 29
+ 3d0:	0f b6       	in	r0, 0x3f	; 63
+ 3d2:	f8 94       	cli
+ 3d4:	e2 9a       	sbi	0x1c, 2	; 28
+ 3d6:	e1 9a       	sbi	0x1c, 1	; 28
+ 3d8:	0f be       	out	0x3f, r0	; 63
+ 3da:	08 95       	ret
+
+000003dc <__eewr_byte_tn13a>:
+ 3dc:	26 2f       	mov	r18, r22
+
+000003de <__eewr_r18_tn13a>:
+ 3de:	e1 99       	sbic	0x1c, 1	; 28
+ 3e0:	fe cf       	rjmp	.-4      	; 0x3de <__eewr_r18_tn13a>
+ 3e2:	1c ba       	out	0x1c, r1	; 28
+ 3e4:	1f ba       	out	0x1f, r1	; 31
+ 3e6:	8e bb       	out	0x1e, r24	; 30
+ 3e8:	2d bb       	out	0x1d, r18	; 29
+ 3ea:	0f b6       	in	r0, 0x3f	; 63
+ 3ec:	f8 94       	cli
+ 3ee:	e2 9a       	sbi	0x1c, 2	; 28
+ 3f0:	e1 9a       	sbi	0x1c, 1	; 28
+ 3f2:	0f be       	out	0x3f, r0	; 63
+ 3f4:	01 96       	adiw	r24, 0x01	; 1
+ 3f6:	08 95       	ret
+
+000003f8 <_exit>:
+ 3f8:	f8 94       	cli
+
+000003fa <__stop_program>:
+ 3fa:	ff cf       	rjmp	.-2      	; 0x3fa <__stop_program>

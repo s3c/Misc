@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<block>
+  <name>Binary Level To Timing</name>
+  <key>binary_level_to_timing</key>
+  <category>Keyfob</category>
+  <import>import binary_level_to_timing as bltt</import>
+  <make>bltt.binary_level_to_timing($samp_rate)</make>
+
+  <param>
+    <name>Sample Rate</name>
+    <key>samp_rate</key>
+    <value>samp_rate</value>
+    <type>real</type>
+  </param>
+
+  <sink>
+    <name>in</name>
+    <type>byte</type>
+  </sink>
+
+  <source>
+    <name>out</name>
+    <type>float</type>
+  </source>
+
+  <doc>
+Converts a binary stream (usually given by a Binary Slicer) to a stream of timing levels for each high/low state. If a sampling rate of 1 is given the number of concurrent level values are returned instead.
+
+Example Input: 001101001
+Example Output: 22112
+
+The last bit is not reported in the output since we don't know how long the state will last.
+  </doc>
+</block>

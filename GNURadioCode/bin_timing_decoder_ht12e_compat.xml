@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<block>
+  <name>Binary Timing Decoder HT12E Compatible</name>
+  <key>bin_timing_decoder_ht12e_compat</key>
+  <category>Keyfob</category>
+  <import>import bin_timing_decoder_ht12e_compat as btd_ht12e_c</import>
+  <make>btd_ht12e_c.bin_timing_decoder_ht12e_compat()</make>
+
+  <sink>
+    <name>in</name>
+    <type>float</type>
+  </sink>
+
+  <source>
+    <name>out</name>
+    <type>short</type>
+  </source>
+
+  <doc>
+Decodes a timing bitstream (usually given by Binary Level To Timing) compatible with the HT12E encoder to a raw int value representing the code word, output values are [0, 4096). This module does its best to avoid false positives but may fail on occasion. This module assumes that a single bit will be approximately 1mS
+  </doc>
+</block>
