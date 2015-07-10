@@ -15,7 +15,8 @@ def calcfactors(repts):
 
 def searchrepeats(inpdata, args):
   repeatslist = list()
-  for complen in range(args.max, args.min-1, -1):
+  for complen in range(int(round(args.max/args.align)*args.align), args.min-1, -args.align):
+  #for complen in range(args.max, args.min-1, -1):
     for windowstart in range(0, len(inpdata)-complen+1, args.align):
       if args.verbose >= 2:
         print("Search length: " + str(complen) + " Window position: " + str(windowstart))
