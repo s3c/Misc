@@ -14,7 +14,8 @@ REGEX_LIST = [r'.*abc.*\.(pdf|doc|xls|ppt)',
 #BASE_PATH = ["/root/"]
 BASE_PATH = [os.environ['userprofile']]
 
-POST_URL = "http://10.13.37.48/"
+#POST_URL = "http://10.13.37.48/"
+POST_URL = "http://10.0.0.11/"
 
 MAX_THREADS = 10
 
